@@ -1,0 +1,1 @@
+function e(e){return e?e.startsWith(`http://`)||e.startsWith(`https://`)?e:e.startsWith(`/`)?`/api`+e:`/api/images/`+e:``}function t(t){return e(t)}function n(t){return e(t)}export{t as n,e as r,n as t};

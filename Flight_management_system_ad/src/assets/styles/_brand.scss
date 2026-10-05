@@ -1,0 +1,67 @@
+/* ⚠️ 自动同步生成，请勿直接修改本文件。
+   真源：design-system/_brand.scss
+   修改方式：编辑 design-system/theme.config.json → 运行 npm run theme:sync */
+
+// ==========================================================================
+// Skynet Design System · SCSS 品牌常量
+// 由 design-system/gen-ramp.mjs 生成，请勿手改。
+// 改品牌色：编辑 theme.config.json → 运行 npm run theme:sync
+//
+// 为什么运行期已经有 tokens.css 了，还需要一份 SCSS 常量？
+//   Element Plus 的按需引入（importStyle: "sass"）必须在【编译期】就知道品牌色，
+//   才能派生出 light-1..9 写进产物。浏览器运行期的 CSS 变量来不及参与这一步。
+//   所以这里把同一份配置喂给编译期，取值由脚本保证与 tokens.css 完全一致。
+// ==========================================================================
+
+// EP 的 $colors 配置：直接给 @forward ... with 使用
+$ep-colors: (
+  "primary": ("base": #1873CC),
+  "success": ("base": #2E7D32),
+  "warning": ("base": #96601A),
+  "danger": ("base": #C62828),
+  "error": ("base": #C62828),
+  "info": ("base": #5F6B7A),
+);
+
+// 品牌
+$brand-primary: #1873CC;
+$brand-bright: #1E90FF;
+$brand-deep: #0F4E8C;
+
+// 语义色（与 tokens.css 一一对应）
+$color-primary: $brand-primary;
+$color-primary-light: $brand-bright;
+$color-primary-dark: $brand-deep;
+$color-primary-bg: #E8F1FA;
+$color-success: #2E7D32;
+$color-warning: #96601A;
+$color-danger: #C62828;
+$color-info: #5F6B7A;
+$color-silver: #C0C4CC;
+$color-silver-light: #E4E7ED;
+$color-silver-dark: #909399;
+
+// 中性色
+$text-primary: #303133;
+$text-regular: #606266;
+$text-secondary: #5F6B7A;
+$text-placeholder: #8F98A6;
+$bg-page: #F5F7FA;
+$bg-card: #FFFFFF;
+$bg-sidebar: #1A2332;
+$bg-sidebar-active: rgba(24, 115, 204, 0.22);
+$border-color: #DCDFE6;
+
+// 质感
+$shadow-card: 0 1px 2px rgba(16, 24, 40, 0.05);
+$shadow-hover: 0 6px 20px rgba(24, 115, 204, 0.14);
+$shadow-dropdown: 0 4px 16px rgba(16, 24, 40, 0.10);
+$shadow-float: 0 12px 32px rgba(16, 24, 40, 0.16);
+$radius-sm: 6px;
+$radius-base: 8px;
+$radius-lg: 12px;
+
+// 后台布局（紧凑档）
+$sidebar-width: 220px;
+$sidebar-collapsed-width: 64px;
+$header-height: 56px;

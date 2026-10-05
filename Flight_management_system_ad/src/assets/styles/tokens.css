@@ -1,0 +1,371 @@
+/* ⚠️ 自动同步生成，请勿直接修改本文件。
+   真源：design-system/tokens.css
+   修改方式：编辑 design-system/theme.config.json → 运行 npm run theme:sync */
+
+/* ==========================================================================
+   Skynet Design System · 设计令牌（唯一真源）
+   --------------------------------------------------------------------------
+   本文件是前台(bs)与后台(ad)共用的样式基底，项目内的副本由 sync.mjs 生成，
+   请勿在项目里直接修改 —— 改这里，再运行：
+       npm run theme:sync        同步到两个项目
+       npm run theme:check       校验色阶是否与 theme.config.json 一致
+
+   设计原则（为什么前台和后台能"和而不同"）：
+     1. 一套色：品牌色、功能色、中性色全局唯一，两个系统看起来就是同一条产品线。
+     2. 两套密度：前台面向旅客，控件大、留白多 → 舒展；后台面向运营，一屏要放
+        更多信息 → 紧凑。差异集中在「密度层」，不散落到各个页面。
+     3. 令牌只表达语义（--text-secondary），不表达外观（--gray-5）。
+        改外观只改令牌，不动业务代码。
+
+   选择器说明：用 :root, html[data-density] 双选择器。
+     后者优先级 (0,1,1) 高于 Element Plus 的 :root (0,1,0)，
+     保证在"EP 样式后加载"的构建产物里，我们的令牌依然生效（与打包顺序解耦）。
+   ========================================================================== */
+
+:root,
+html[data-density] {
+  /* ======================================================================
+     1. 品牌色
+     ====================================================================== */
+
+  /* 交互主色：按钮底、链接、选中态、焦点环。白字对比度 4.81:1，达 WCAG AA */
+  --color-primary: #1873CC;
+  /* 悬停态：比主色更深。EP 默认 hover 会变浅，浅底白字会掉到 2.87:1，故改为加深 */
+  --color-primary-hover: #135CA3; /* 白字 6.80:1 */
+  /* 按下态 */
+  --color-primary-active: #0F4E8C; /* 白字 8.42:1 */
+  /* 浅底：选中行、标签底、提示块 */
+  --color-primary-soft: #E8F1FA;
+  /* 浅边框：聚焦输入框、选中卡片 */
+  --color-primary-border: #BAD5F0;
+  /* 品牌亮色：只用于装饰、渐变、图标、大面积色块，不承载正文文字 */
+  --color-primary-bright: #1E90FF;
+
+  /* 历史别名（旧代码仍在使用，勿在新代码中引用） */
+  --color-primary-light: var(--color-primary-bright);
+  --color-primary-dark: var(--color-primary-active);
+  --color-primary-bg: var(--color-primary-soft);
+  --color-primary-light-9: var(--color-primary-soft);
+  --color-secondary: #C0C4CC;
+
+  /* 品牌渐变：仅限装饰区（首屏、空状态、图标底衬），不要用在按钮上 */
+  --gradient-brand: linear-gradient(135deg, #0F4E8C 0%, #1873CC 55%, #1E90FF 100%);
+  --gradient-brand-soft: linear-gradient(135deg, rgba(24, 115, 204, 0.10) 0%, rgba(30, 144, 255, 0.02) 100%);
+  --gradient-brand-hero: linear-gradient(135deg, #1E90FF 0%, #0A6EDD 55%, #084C9E 100%);
+
+  /* 装饰色阶（--sky-*）：只用在渐变、插图、大面积色块等不承载正文的位置。
+     这些值刻意保持明快，不参与"文字可读性"的约束，因此与语义色分开命名。 */
+  --sky-300: #5FB0FF;
+  --sky-400: #4DA3FF;
+  --sky-500: #1E90FF;
+  --sky-600: #1674D6;
+  --sky-700: #0A6EDD;
+  --sky-800: #0B5FB8;
+  --sky-900: #084C9E;
+
+  /* 品牌色的 RGB 分量：供 rgba() 场景使用（如半透明底纹）。
+     CSS 变量无法直接拆进 rgba() 的三个参数位，所以单独提供分量。 */
+  --color-primary-rgb: 24, 115, 204;
+  --color-primary-bright-rgb: 30, 144, 255;
+  --sky-400-rgb: 77, 163, 255;
+  --sky-900-rgb: 8, 76, 158;
+
+  /* ======================================================================
+     2. 功能色
+     说明：EP 会据此派生出 light-1..9 供标签/提示的浅底使用，
+          基色本身用于按钮底与图标，故必须满足白字 4.5:1
+     ====================================================================== */
+  --color-success: #2E7D32; /* 白字 5.13:1，浅底深字 4.75:1 */
+  --color-success-soft: #EAF2EB;
+  --color-warning: #96601A; /* 白字 5.27:1，浅底深字 4.91:1 */
+  --color-warning-soft: #F5EFE8;
+  --color-danger: #C62828; /* 白字 5.62:1，浅底深字 5.07:1 */
+  --color-danger-soft: #F9EAEA;
+  --color-info: #5F6B7A; /* 白字 5.43:1，浅底深字 4.94:1 */
+  --color-info-soft: #EFF0F2;
+  /* 浅底区块的描边：比 soft 深一档，用于错误提示框、标签等需要收边的浅色块 */
+  --color-success-border: #C0D8C2;
+  --color-warning-border: #E0CFBA;
+  --color-danger-border: #EEBFBF;
+  --color-info-border: #CFD3D7;
+  /* 功能色同样提供 RGB 分量：浅色底（10% 透明度那种）必须由分量拼出来，
+     否则调了基色而浅底还是旧色，就会出现"标签底色和新色不搭"的割裂。 */
+  --color-success-rgb: 46, 125, 50;
+  --color-warning-rgb: 150, 96, 26;
+  --color-danger-rgb: 198, 40, 40;
+  --color-info-rgb: 95, 107, 122;
+  /* soft 再深一档：用于状态色块的渐变收尾、需要比 soft 稍实一点的小面积底色 */
+  --color-success-soft-deep: #DCEEDA;
+  --color-warning-soft-deep: #F0E2CB;
+  --color-danger-soft-deep: #F4D4D4;
+  --color-info-soft-deep: #DFE1E4;
+
+  /* ======================================================================
+     2.5 深色底专用
+     浅色主题的令牌在深色底上会不达标：--text-secondary 在 #0B1220 上只有
+     3.45:1，--color-primary 只有 3.89:1。所以深色区域（航班动态板、深色
+     侧边栏、深色首屏）必须改用下面这组，而不是直接复用浅色令牌。
+     ====================================================================== */
+  --bg-board: #0B1220;
+  --text-on-dark: #E6EBF5; /* 板底 15.66:1 */
+  --text-on-dark-strong: #FFFFFF; /* 18.72:1 */
+  /* 深色装饰面上的"实体白"：圆点、指示器、色块。
+     与 --text-on-dark-strong 同值但语义不同 —— 一个当底、一个当字，
+     将来想让"底更亮、字稍柔"时不会互相牵连。 */
+  --bg-on-dark-strong: #FFFFFF;
+  --text-on-dark-secondary: #C3CFE0; /* 11.88:1 */
+  --text-on-dark-muted: #9FB2C9; /* 8.64:1，原 #8aa3c0 偏暗且无语义 */
+  --color-primary-on-dark: var(--sky-400); /* 7.13:1，深底上的品牌蓝 */
+  --color-success-on-dark: #4ADE80; /* 10.74:1 */
+  --color-warning-on-dark: #FBBF24; /* 11.22:1 */
+  --color-danger-on-dark: #F87171; /* 6.77:1 */
+  /* 深色底上的分隔线：半透明白，可叠加在任意深色底上而不需要知道底色 */
+  --border-on-dark: rgba(255, 255, 255, 0.12);
+
+  /* ======================================================================
+     2.6 业务扩展色板：会员等级
+     会员等级有行业约定色（银=浅灰、金=金、铂金=蓝、钻石=紫），硬塞进品牌色板会失真，
+     所以单列一层。但它必须遵守和品牌色一样的规矩：
+       用「浅底 + 深字」，不用「深底 + 白字」。
+       银卡本质是浅灰，配白字只有 1.75:1 —— 这个模式从一开始就不可能达标
+       （原值 3.08 / 1.75 / 2.19 / 3.24 / 4.15，五个全不合格，而标签上强制写了白字）。
+     下面的对照度均为实测值。
+     ====================================================================== */
+  --tier-normal-fg: #5A6474;
+  --tier-normal-bg: #EDEFF3; /* 5.20:1 */
+  --tier-silver-fg: #646D7C;
+  --tier-silver-bg: #EEF1F5; /* 4.61:1 */
+  --tier-gold-fg: #8A6412;
+  --tier-gold-bg: #FAF0DC; /* 4.74:1 */
+  --tier-platinum-fg: #1565C0;
+  --tier-platinum-bg: #E6F0FB; /* 4.99:1 */
+  --tier-diamond-fg: #6D28D9;
+  --tier-diamond-bg: #EFE9FC; /* 6.00:1 */
+
+  /* ======================================================================
+     3. 中性色
+     ====================================================================== */
+  --text-primary: #303133; /* 白底 12.63:1 */
+  --text-regular: #606266; /* 白底 7.04:1 */
+  --text-secondary: #5F6B7A; /* 白底 5.43:1 —— 原 #909399 只有 3.08:1，是"页面发虚"的主因 */
+  --text-placeholder: #8F98A6; /* 占位符无 WCAG 硬性要求，但要能与正文区分 */
+  --text-disabled: #A8ABB2;
+  --text-inverse: #FFFFFF;
+
+  --bg-page: #F5F7FA; /* 两个系统统一为此值（原后台是 #F0F2F5，会显得脏一档） */
+  --bg-card: #FFFFFF;
+  --bg-header: #FFFFFF;
+  --bg-elevated: #FFFFFF;
+  --bg-muted: #F7F9FC;
+  --bg-muted-strong: #EDF1F7;
+  --bg-hover: #F2F5F9;
+  --bg-sidebar: #1A2332;
+  --bg-sidebar-hover: rgba(255, 255, 255, 0.06);
+  --bg-sidebar-active: rgba(24, 115, 204, 0.22);
+  --bg-mask: rgba(16, 24, 40, 0.45);
+  /* 首屏压暗遮罩：叠在品牌渐变上压低亮度，让白色标题稳定达到 4.5:1 以上，
+     改渐变时不需要重新试标题可读性 */
+  --scrim-hero-rgb: 4, 26, 56;
+
+  --border-color: #DCDFE6;
+  --border-color-light: #E4E7ED;
+  --border-color-lighter: #EBEEF5;
+  --border-color-strong: #C8CDD6;
+
+  /* 中性填充（--fill-*）：表示"不可用 / 已占用 / 骨架屏"的灰底。
+     刻意与 --border-color-* 分开命名 —— 同一个灰值当描边和当填充是两种语义，
+     将来想让"填充更浅、描边更深"时，改一边不会牵连另一边。 */
+  --fill-neutral: #E4E7ED;
+  --fill-neutral-strong: #D2D7DF;
+
+  /* ======================================================================
+     4. 尺度
+     ====================================================================== */
+  --radius-sm: 6px;
+  --radius-base: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 999px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 12px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 4px 16px rgba(16, 24, 40, 0.10);
+  --shadow-hover: 0 6px 20px rgba(24, 115, 204, 0.14);
+  --shadow-float: 0 12px 32px rgba(16, 24, 40, 0.16);
+  /* 吸底操作栏：唯一一个"向上投"的阴影，方向和上面的都相反，所以单独一个令牌 */
+  --shadow-bar-top: 0 -2px 12px rgba(16, 24, 40, 0.10);
+  --shadow-focus: 0 0 0 3px rgba(24, 115, 204, 0.18);
+
+  /* 统一的字体栈：原先前台 PingFang 优先、后台 Helvetica 优先，会导致同一台机器上字形不同。
+     末尾三支是东南亚语种的字形回退 —— 前台支持泰/越/印尼/马来，而 'Segoe UI' 不含泰文字形，
+     不显式声明会掉到浏览器默认字体，泰语会明显发虚。浏览器逐字形回退，不影响中日韩文字。 */
+  --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', 'Leelawadee UI', 'Noto Sans Thai',
+    'Helvetica Neue', Arial, Tahoma, sans-serif;
+  --font-family-number: 'SF Mono', 'DIN Alternate', Menlo, Consolas, 'Courier New', monospace;
+
+  --font-size-xs: 12px;
+  --font-size-sm: 13px;
+  --font-size-base: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 18px;
+  --font-size-2xl: 22px;
+  --font-size-3xl: 28px;
+  --font-weight-medium: 500;
+  --font-weight-bold: 600;
+  --line-height-base: 1.6;
+  /* 长段落（说明文字、空状态描述）用更松的行高，1.6 在 2 行以上会显挤 */
+  --line-height-relaxed: 1.75;
+
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 0.15s;
+  --duration-base: 0.22s;
+  --duration-slow: 0.35s;
+
+  /* ======================================================================
+     5. 密度层（默认 = 前台舒展档）
+     ====================================================================== */
+  --space-card: 24px; /* 卡片内边距 */
+  --space-section: 24px; /* 区块之间 */
+  --space-inline: 16px; /* 行内元素之间 */
+  --layout-header-height: 64px;
+  --layout-container: 1200px; /* 内容最大宽度，后台为全宽 */
+  --radius-card: var(--radius-xl);
+  --radius-control: var(--radius-base);
+  --control-height: 40px;
+  /* 认证页（登录）专用控件高度。
+     刻意放在密度档之外：登录页是产品门面，控件要达到 44px 的触控目标
+     （WCAG 2.5.5 / iOS HIG），而数据密集的列表页需要紧凑，取值诉求不同。
+     紧凑档因此不覆写这个令牌 —— 见 global.scss 的 .login-card。 */
+  --auth-control-height: 44px;
+  --table-row-height: 52px;
+
+  /* ======================================================================
+     6. Element Plus 适配层
+     ====================================================================== */
+  --el-font-family: var(--font-family-base);
+  --el-component-size: var(--control-height);
+  --el-component-size-large: calc(var(--control-height) + 4px);
+  --el-component-size-small: calc(var(--control-height) - 8px);
+  --el-border-radius-base: var(--radius-control);
+  --el-border-radius-small: var(--radius-sm);
+  --el-color-white: #ffffff;
+  --el-color-black: #000000;
+
+  /* EP 中性色校正：EP 默认的次要文字 #909399 只有 3.08:1，
+     表格/表单里大量使用它，是"信息层级糊在一起"的首要原因，这里统一收口到我们的令牌。 */
+  --el-text-color-primary: var(--text-primary);
+  --el-text-color-regular: var(--text-regular);
+  --el-text-color-secondary: var(--text-secondary);
+  --el-text-color-placeholder: var(--text-placeholder);
+  --el-text-color-disabled: var(--text-disabled);
+  --el-border-color: var(--border-color);
+  --el-border-color-light: var(--border-color-light);
+  --el-border-color-lighter: var(--border-color-lighter);
+  --el-bg-color-page: var(--bg-page);
+
+  /* @ramp:start —— 本段由 design-system/gen-ramp.mjs 生成，请勿手改。
+     改品牌色：编辑 theme.config.json 后运行 npm run theme:sync */
+
+  /* primary —— 基色 #1873CC，白字对比度达标 */
+  --el-color-primary: #1873CC;
+  --el-color-primary-rgb: 24, 115, 204;
+  --el-color-primary-light-1: #2F81D1;
+  --el-color-primary-light-2: #468FD6;
+  --el-color-primary-light-3: #5D9DDB;
+  --el-color-primary-light-4: #74ABE0;
+  --el-color-primary-light-5: #8CB9E6;
+  --el-color-primary-light-6: #A3C7EB;
+  --el-color-primary-light-7: #BAD5F0;
+  --el-color-primary-light-8: #D1E3F5;
+  --el-color-primary-light-9: #E8F1FA;
+  --el-color-primary-dark-2: #135CA3;
+
+  /* success —— 基色 #2E7D32，白字对比度达标 */
+  --el-color-success: #2E7D32;
+  --el-color-success-rgb: 46, 125, 50;
+  --el-color-success-light-1: #438A47;
+  --el-color-success-light-2: #58975B;
+  --el-color-success-light-3: #6DA470;
+  --el-color-success-light-4: #82B184;
+  --el-color-success-light-5: #97BE99;
+  --el-color-success-light-6: #ABCBAD;
+  --el-color-success-light-7: #C0D8C2;
+  --el-color-success-light-8: #D5E5D6;
+  --el-color-success-light-9: #EAF2EB;
+  --el-color-success-dark-2: #256428;
+
+  /* warning —— 基色 #96601A，白字对比度达标 */
+  --el-color-warning: #96601A;
+  --el-color-warning-rgb: 150, 96, 26;
+  --el-color-warning-light-1: #A17031;
+  --el-color-warning-light-2: #AB8048;
+  --el-color-warning-light-3: #B6905F;
+  --el-color-warning-light-4: #C0A076;
+  --el-color-warning-light-5: #CBB08D;
+  --el-color-warning-light-6: #D5BFA3;
+  --el-color-warning-light-7: #E0CFBA;
+  --el-color-warning-light-8: #EADFD1;
+  --el-color-warning-light-9: #F5EFE8;
+  --el-color-warning-dark-2: #784D15;
+
+  /* danger —— 基色 #C62828，白字对比度达标 */
+  --el-color-danger: #C62828;
+  --el-color-danger-rgb: 198, 40, 40;
+  --el-color-danger-light-1: #CC3D3D;
+  --el-color-danger-light-2: #D15353;
+  --el-color-danger-light-3: #D76969;
+  --el-color-danger-light-4: #DD7E7E;
+  --el-color-danger-light-5: #E39494;
+  --el-color-danger-light-6: #E8A9A9;
+  --el-color-danger-light-7: #EEBFBF;
+  --el-color-danger-light-8: #F4D4D4;
+  --el-color-danger-light-9: #F9EAEA;
+  --el-color-danger-dark-2: #9E2020;
+
+  /* info —— 基色 #5F6B7A，白字对比度达标 */
+  --el-color-info: #5F6B7A;
+  --el-color-info-rgb: 95, 107, 122;
+  --el-color-info-light-1: #6F7A87;
+  --el-color-info-light-2: #7F8995;
+  --el-color-info-light-3: #8F97A2;
+  --el-color-info-light-4: #9FA6AF;
+  --el-color-info-light-5: #AFB5BD;
+  --el-color-info-light-6: #BFC4CA;
+  --el-color-info-light-7: #CFD3D7;
+  --el-color-info-light-8: #DFE1E4;
+  --el-color-info-light-9: #EFF0F2;
+  --el-color-info-dark-2: #4C5662;
+  /* @ramp:end */
+}
+
+/* ==========================================================================
+   密度档：紧凑（后台）
+   在 index.html 的 <html> 上加 data-density="compact" 即可整体切换。
+   新增页面只要使用 --space-card / --control-height 这些语义令牌，
+   就会自动跟随密度，不需要为后台单独写一套样式。
+   ========================================================================== */
+html[data-density='compact'] {
+  --space-card: 18px;
+  --space-section: 16px;
+  --space-inline: 12px;
+  --layout-header-height: 56px;
+  --layout-container: 100%;
+  --radius-card: var(--radius-base);
+  --radius-control: var(--radius-sm);
+  --control-height: 32px;
+  --table-row-height: 44px;
+  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.05);
+}

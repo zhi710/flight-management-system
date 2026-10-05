@@ -1,0 +1,277 @@
+/* ==========================================================================
+   SkyTrip（前台 · 旅客端）全局样式
+   --------------------------------------------------------------------------
+   色彩、尺度、圆角、阴影一律使用设计系统令牌（见同目录 tokens.css），
+   本文件不写死任何颜色值 —— 改外观请改 design-system/theme.config.json。
+
+   密度档：index.html 里 <html data-density="comfortable">
+           （后台是 compact，两者共用 tokens.css 的同一套色与尺度，只在密度上分叉）
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   旧令牌别名
+   历史代码里用到的名字在这里统一指向设计系统，避免逐个文件改动。
+   新代码请直接使用 tokens.css 里的语义令牌。
+   -------------------------------------------------------------------------- */
+:root,
+html[data-density] {
+  --bg-color: var(--bg-page);
+  --header-height: var(--layout-header-height);
+}
+
+/* --------------------------------------------------------------------------
+   基础
+   -------------------------------------------------------------------------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  color: var(--text-primary);
+  background-color: var(--bg-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+a:hover {
+  color: var(--color-primary-hover);
+}
+
+/* 键盘可达性：只有键盘聚焦时才显示焦点环，鼠标点击不显示 */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* 航班号、时刻、金额：等宽数字，避免刷新时数字宽度跳动 */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+/* 滚动条：跟随中性色令牌，默认样式在浅色页面里太重 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color-strong);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-placeholder);
+}
+
+/* --------------------------------------------------------------------------
+   布局
+   -------------------------------------------------------------------------- */
+.page-container {
+  max-width: var(--layout-container);
+  margin: 0 auto;
+  padding: var(--space-section) var(--space-5);
+}
+
+.card-shadow {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color-lighter);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-card);
+}
+
+/* 页面标题：原本 14 个页面各自重复同样的四行，改这里即可全局生效 */
+.page-title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-5);
+}
+
+/* 页头：标题在左、操作在右 */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+/* 标题已经放进页头时，间距由页头统一给，避免叠加成双倍 */
+.page-header .page-title {
+  margin-bottom: 0;
+}
+
+/* 窄屏：标题与操作改为竖排。
+   中文没有词间空格，横向挤压时标题会逐字换行（390px 下「电子登机牌」被拆成两行），
+   堆叠后标题独占整行，按钮也自然变成整行宽度的触摸目标。 */
+@media (max-width: 640px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+  }
+}
+
+/* 区块标题（详情页的信息分组） */
+.section-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-4);
+}
+
+/* 空状态容器：原本 9 个页面各自重复 padding */
+.empty {
+  padding: 60px 0;
+  text-align: center;
+}
+
+.empty-state {
+  padding: 80px 0;
+  text-align: center;
+}
+
+.empty-tip {
+  margin-top: var(--space-1);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+/* 窄屏：收紧容器内边距，否则内容会贴到屏幕边缘 */
+@media (max-width: 768px) {
+  .page-container {
+    padding: var(--space-section) var(--space-4);
+  }
+
+  .page-title {
+    font-size: var(--font-size-xl);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Element Plus 适配
+   原则：能用 EP 自己的 CSS 变量就不用 !important —— 覆盖变量是"说给它听"，
+   写 !important 是"打它一顿"，前者在 EP 升级后依然有效。
+   -------------------------------------------------------------------------- */
+
+/* 主按钮：纯色 + 悬停加深。
+   去掉原来的渐变 + hover 上浮，是因为后台是纯色无动效的，
+   两个系统一起看会像两个产品；且航空业调性更适合稳重的纯色。 */
+.el-button--primary:not(.is-plain):not(.is-text):not(.is-link) {
+  --el-button-bg-color: var(--color-primary);
+  --el-button-border-color: var(--color-primary);
+  --el-button-hover-bg-color: var(--color-primary-hover);
+  --el-button-hover-border-color: var(--color-primary-hover);
+  --el-button-active-bg-color: var(--color-primary-active);
+  --el-button-active-border-color: var(--color-primary-active);
+}
+
+/* 输入类控件的聚焦态统一加品牌色焦点环 */
+.el-input__wrapper.is-focus,
+.el-select__wrapper.is-focused,
+.el-textarea__inner:focus {
+  box-shadow: var(--shadow-focus);
+}
+
+/* 顶部导航选中态：EP 的 el-menu 用 --el-menu-active-color，改变量即可 */
+.el-menu--horizontal {
+  --el-menu-active-color: var(--color-primary);
+  --el-menu-hover-bg-color: transparent;
+  --el-menu-hover-text-color: var(--color-primary);
+}
+
+/* 表格：表头浅底 + 行悬停品牌淡蓝 */
+.el-table {
+  --el-table-header-bg-color: var(--bg-muted);
+  --el-table-header-text-color: var(--text-regular);
+  --el-table-row-hover-bg-color: var(--color-primary-soft);
+  --el-table-border-color: var(--border-color-lighter);
+}
+
+/* 行内链接按钮（取消订单/查看详情这类）：视觉仍保持小，但把命中区补到 ≥24×24。
+   WCAG 2.2 SC 2.5.8 要求点击目标不小于 24×24px；EP 的 link 按钮实测 30×18px，
+   宽度本来就达标，只差 6px 高度。这里直接撑高，布局占位靠负 margin 抵消。
+   【不要改回 ::before 覆盖层】按钮间距只有 4px 时覆盖层会与相邻按钮重合，
+   导致「点 A 命中 B」；后台就因此出过「点编辑触发删除」的事故。 */
+.el-table .el-button.is-link {
+  min-width: 24px;
+  min-height: 24px;
+  margin-top: -3px;
+  margin-bottom: -3px;
+}
+
+/* 登录/注册/条款卡片内的控件尺寸。
+   EP 的输入框高度跟随 --el-component-size-large，按钮却走 sass 里硬编码的
+   $button-size 尺寸表（large=40px），完全不受该变量影响 ——
+   只改前者会出现「输入框 44px、按钮 40px」的高低错位，所以要两边一起钉住。
+   44px 而非 40px：这是 WCAG 2.5.5 / iOS HIG 建议的触控目标，登录页值得放宽。
+   只作用在 auth 卡片内，不影响其他页面的紧凑控件。 */
+.auth-card {
+  --el-component-size-large: var(--auth-control-height);
+}
+
+.auth-card .el-button--large,
+.auth-card .oauth-btn {
+  height: var(--auth-control-height);
+  min-height: var(--auth-control-height);
+}
+
+/* 对话框自适应：写死的 width 不超出视口 */
+.el-dialog {
+  max-width: calc(100vw - 32px);
+  border-radius: var(--radius-card);
+}
+
+/* 分页：EP 的选中态已经走 --el-color-primary，无需额外覆盖 */
+
+/* NProgress（第三方库自带样式，必须用 !important 压制，不属于 EP 覆盖） */
+#nprogress .bar {
+  background: var(--color-primary) !important;
+}
+#nprogress .peg {
+  box-shadow:
+    0 0 10px var(--color-primary),
+    0 0 5px var(--color-primary) !important;
+}
+
+/* --------------------------------------------------------------------------
+   过渡动画
+   -------------------------------------------------------------------------- */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity var(--duration-slow) var(--ease-out);
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition:
+    opacity var(--duration-slow) var(--ease-out),
+    transform var(--duration-slow) var(--ease-out);
+}
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}

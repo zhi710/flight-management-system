@@ -1,0 +1,1 @@
+import{d as e}from"./index-DgUo45fD.js";function t(t){return e.get(`/ssr/codes`,{params:{category:t}})}function n(t){return e.get(`/ssr/orders/${t}`)}export{t as n,n as t};

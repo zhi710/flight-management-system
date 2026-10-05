@@ -1,0 +1,1 @@
+import{n as e}from"./index-3-K_XWeq.js";function t(t){return e.get(`/admin/reports/operation`,{params:t})}function n(t){return e.get(`/admin/reports/revenue`,{params:t})}export{n,t};

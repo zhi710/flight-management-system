@@ -1,0 +1,383 @@
+// ==========================================================================
+// SkyOps（后台 · 运营端）全局样式
+// --------------------------------------------------------------------------
+// 色彩与尺度全部来自设计系统（tokens.css 运行期令牌 / theme.scss 编译期常量），
+// 本文件不写死颜色值。密度档为 compact（见 index.html 的 <html data-density>）。
+//
+// 与前台的分工：
+//   共用：品牌色、功能色、中性色、字体族、圆角阶梯、阴影、动效曲线
+//   分叉：控件高度、卡片内边距、内容宽度（后台紧凑、全宽，一屏放更多信息）
+// ==========================================================================
+
+// ---------- 基础 ----------
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  color: var(--text-primary);
+  background-color: var(--bg-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-out);
+
+  &:hover {
+    color: var(--color-primary-hover);
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+// 航班号/时刻/金额：等宽数字，避免刷新时数字宽度跳动
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+// 滚动条
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $color-silver;
+  border-radius: var(--radius-full);
+
+  &:hover {
+    background: $color-silver-dark;
+  }
+}
+
+// ---------- 布局 ----------
+
+.page-container {
+  padding: var(--space-card);
+}
+
+// 卡片
+.card-panel {
+  background: $bg-card;
+  border: 1px solid var(--border-color-lighter);
+  border-radius: var(--radius-card);
+  box-shadow: $shadow-card;
+  padding: var(--space-card);
+  margin-bottom: var(--space-section);
+}
+
+// 搜索栏
+.search-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-inline);
+  align-items: flex-end;
+  margin-bottom: var(--space-section);
+
+  .el-form-item {
+    margin-bottom: 0;
+  }
+}
+
+// 统计卡片行
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-inline);
+  margin-bottom: var(--space-section);
+}
+
+.stat-card {
+  background: $bg-card;
+  border: 1px solid var(--border-color-lighter);
+  border-radius: var(--radius-card);
+  box-shadow: $shadow-card;
+  padding: var(--space-card);
+  display: flex;
+  align-items: center;
+  gap: var(--space-inline);
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: $radius-base;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  .stat-content {
+    .stat-value {
+      font-size: var(--font-size-2xl);
+      font-weight: var(--font-weight-bold);
+      color: $text-primary;
+      line-height: 1.2;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat-label {
+      font-size: var(--font-size-sm);
+      color: $text-secondary;
+      margin-top: var(--space-1);
+    }
+  }
+}
+
+// 表格操作按钮间距
+.table-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+
+  /**
+   * EP 会给相邻按钮加 margin-left:12px，与 gap 叠加后实际间距变成 16px。
+   * 航班计划有 4 个按钮（编辑/票价/不正常处理/删除），叠加后需要 228px，
+   * 而操作列只有 220px —— 于是折成两行，行高从 52px 变成 63px。
+   * 归零 margin，间距完全交给 gap 控制。
+   */
+  .el-button + .el-button {
+    margin-left: 0;
+  }
+}
+
+/* 登录卡片内的控件尺寸：与前台登录页对齐。
+   EP 的输入框高度跟随 --el-component-size-large，按钮却走 sass 里硬编码的
+   $button-size 尺寸表（large=40px），完全不受该变量影响 ——
+   只改前者会出现「输入框 44px、按钮 40px」的高低错位（后台更糟：紧凑档下
+   按钮只剩 32px），所以按钮高度由页面的 .login-btn 直接用同一令牌钉住。 */
+.login-card {
+  --el-component-size-large: var(--auth-control-height);
+
+  /* 认证卡片局部脱离后台「紧凑档」。
+     紧凑档把 --radius-card 压到 8px、--shadow-card 压到 1px 的极淡阴影 ——
+     这对数据密集的列表页是对的，但登录页只有两个输入框：
+     8px 圆角显得局促，而几乎看不见的阴影会让卡片变成"没有厚度的白纸"。
+     这些都是继承型令牌，在卡片这一层重声明即可只影响登录页。 */
+  --radius-card: var(--radius-xl); /* 8px → 16px */
+  --radius-control: var(--radius-base); /* 6px → 8px */
+  --shadow-card: var(--shadow-md); /* 极淡 → 可见抬升 */
+}
+
+// 页面标题
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-section);
+
+  .page-title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: $text-primary;
+  }
+}
+
+// 标题行 / 搜索栏作为卡片唯一内容时（如「筛选条件」独占一张卡片），
+// 不需要它自带的下外边距，否则卡片下方会多出一段空白
+.page-header:last-child,
+.search-bar:last-child {
+  margin-bottom: 0;
+}
+
+// ---------- Element Plus 适配 ----------
+
+// 对话框定位。
+// 这里不能用 `.el-dialog { margin: 0 auto }` 直接覆盖：EP 的按需样式位于异步分包，
+// 打包后晚于本文件加载，同优先级下会赢。用 html[data-density] 提高一级优先级来跨分包生效，
+// 比写 !important 更可控（不会误伤其他同名前缀样式）。
+html[data-density] {
+  .el-dialog {
+    margin: 0 auto;
+    max-width: calc(100vw - 32px);
+    // EP 的对话框底色取自 --el-dialog-bg-color，改变量即可，无需 background: #fff !important
+    --el-dialog-bg-color: var(--bg-card);
+  }
+}
+
+.el-overlay-dialog {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.el-dialog__header {
+  padding: var(--el-dialog-padding-primary) var(--el-dialog-padding-primary) 0;
+  margin-right: 0;
+}
+
+.el-dialog__body {
+  padding: var(--space-card) var(--el-dialog-padding-primary);
+}
+
+.el-dialog__footer {
+  padding: 0 var(--el-dialog-padding-primary) var(--el-dialog-padding-primary);
+}
+
+// 主按钮：纯色 + 悬停加深（与前台保持同一气质：无渐变、无上浮）
+.el-button--primary:not(.is-plain):not(.is-text):not(.is-link) {
+  --el-button-bg-color: var(--color-primary);
+  --el-button-border-color: var(--color-primary);
+  --el-button-hover-bg-color: var(--color-primary-hover);
+  --el-button-hover-border-color: var(--color-primary-hover);
+  --el-button-active-bg-color: var(--color-primary-active);
+  --el-button-active-border-color: var(--color-primary-active);
+}
+
+// 输入类控件聚焦时的品牌色焦点环
+.el-input__wrapper.is-focus,
+.el-select__wrapper.is-focused,
+.el-textarea__inner:focus {
+  box-shadow: var(--shadow-focus);
+}
+
+// ---------- 控件尺寸阶梯 ----------
+/**
+ * 页面里几乎每个按钮都写着 size="small"（50 处），于是「查询」「新增用户」这些
+ * 页面级主操作和表格行内的小链接一样大（都是 24px），完全没有层级可言。
+ * 这里不改 50 处模板，改用容器作用域把"页面级操作"提回标准高度，形成两级：
+ *   页面级（页头 / 搜索栏 / 卡片直系按钮 / 对话框页脚） → --control-height（32px）
+ *   表格行内与表单内                                 → 保持 size="small"（24px）
+ * 这样以后新页面只要把按钮放进这些容器，就自动落在正确的层级上。
+ */
+.page-header .el-button:not(.is-link):not(.is-text),
+.search-bar .el-button:not(.is-link):not(.is-text),
+.card-panel > .el-button:not(.is-link):not(.is-text),
+.el-dialog__footer .el-button:not(.is-link):not(.is-text) {
+  height: var(--control-height);
+  padding: 0 var(--space-4);
+}
+
+// ---------- 表格 ----------
+.el-table {
+  --el-table-header-bg-color: var(--bg-muted);
+  --el-table-header-text-color: #{$text-regular};
+  --el-table-row-hover-bg-color: #{$color-primary-bg};
+  --el-table-border-color: #{$border-color};
+
+  th.el-table__cell {
+    font-weight: var(--font-weight-medium);
+  }
+
+  /**
+   * 行内链接按钮（编辑/删除这类）：视觉仍保持 small，但把命中区补到 ≥24×24。
+   * WCAG 2.2 SC 2.5.8 要求点击目标不小于 24×24px；EP 的 link 按钮实测 30×18px，
+   * 宽度本来就达标，只差 6px 高度。
+   *
+   * 这里用 min-height + 负 margin 把命中区补高，同时让布局占位仍是原来的 18px，
+   * 表格密度不变。
+   *
+   * 【不要改回 ::before 覆盖层】曾经用过 inset:-5px -4px 的伪元素方案，它有两个坑：
+   *   1. EP 的 link 按钮自身是 position:static，伪元素会相对「最近的定位祖先」
+   *      （即整个表格单元格）定位，撑成整格大小的遮罩 —— 同一格里后渲染的按钮
+   *      压在最先，于是点「编辑」实际命中最后一个「删除」。删除是不可逆操作，
+   *      这个 bug 很危险。改回时必须确保按钮自身 position:relative。
+   *   2. 操作区 .table-actions 的间距只有 var(--space-1)=4px，小于左右各扩 4px，
+   *      相邻按钮的命中区会相接/重叠，边界处依然会误触。
+   * 结论：覆盖层方案在这个间距下不成立，改用直接撑高。
+   */
+  .el-button.is-link {
+    min-width: 24px;
+    min-height: 24px;
+    margin-top: -3px;
+    margin-bottom: -3px;
+  }
+}
+
+// 区块标题（卡片内的小标题 + 右侧操作区）
+// SystemConfig / SsrManage / CrewCompliance 三个页面各写了一遍，收进全局
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-inline);
+}
+
+.section-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+// ---------- 单元格内两行堆叠 ----------
+/**
+ * 把两个窄列合并成一列（主值一行 + 次要值一行）。
+ * 后台表格的横向溢出多数不是因为某一列太宽，而是列数太多：
+ * 每多一列至少多 90px，10 列的运营表在 1180px 画布上必然要滚。
+ * 合并「相关的两个值」比压缩列宽更好——既不丢信息，也不至于把文字挤成省略号。
+ * 例：航班号 + 日期、延误分钟 + 延误代码、会员号 + 用户ID。
+ */
+.cell-stack {
+  line-height: 1.35;
+  min-width: 0;
+
+  // 两行都必须是单行：长 ID 一旦折行，行高会从 52px 涨到 71px，
+  // 反而把"合并列省高度"的收益吃掉。超出就省略，完整值靠调用方挂 title。
+  &__main,
+  &__sub {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__main {
+    color: var(--text-primary);
+  }
+
+  &__sub {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+  }
+}
+
+// ---------- 常用文字层级 ----------
+// 这几个类原先在 5 个页面里各自重复定义，收进全局作为默认值
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+// 次要说明文字（比 .text-secondary 小一号，用于单元格副行、空状态提示）
+.text-sub {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.text-mono {
+  font-family: var(--font-family-number);
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+// ---------- 分页条 ----------
+// 原先 12 个页面各写一遍同样的三行；收进全局后页面里只剩差异部分
+.pagination-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--space-section);
+}

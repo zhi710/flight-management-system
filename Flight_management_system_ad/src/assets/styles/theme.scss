@@ -1,0 +1,74 @@
+// ==========================================================================
+// SkyOps（后台 · 运营端）Element Plus 主题装配
+// --------------------------------------------------------------------------
+// 品牌色与所有语义常量都来自设计系统：
+//   _brand.scss     ← 由 design-system/gen-ramp.mjs 生成（勿手改）
+//   tokens.css      ← 运行期令牌，与 _brand.scss 取值一致
+// 改品牌色请编辑 design-system/theme.config.json 后运行 npm run theme:sync。
+//
+// 为什么后台要同时存在 SCSS 常量和 CSS 变量？
+//   Element Plus 的按需引入（importStyle: 'sass'）必须在编译期拿到品牌色，
+//   才能派生出 light-1..9 写进产物；浏览器运行期的 CSS 变量赶不上这一步。
+//   所以编译期用 _brand.scss，运行期用 tokens.css，取值由脚本保证一致。
+//
+// 本文件会被 vite 的 css.preprocessorOptions.scss.additionalData 以
+// `@use "…/theme.scss" as *` 注入到每个 SCSS 块，因此这里导出的名字
+// 在所有 <style lang="scss"> 里都能直接用。
+// ==========================================================================
+
+@use './brand' as brand;
+
+// EP 色阶配置：主色/功能色由设计系统统一提供，EP 据此派生 light-1..9
+@forward 'element-plus/theme-chalk/src/common/var.scss' with (
+  $colors: brand.$ep-colors
+);
+
+// --------------------------------------------------------------------------
+// 语义常量（与 tokens.css 一一对应）
+// --------------------------------------------------------------------------
+
+// 品牌
+$color-primary: brand.$color-primary;
+$color-primary-light: brand.$color-primary-light;
+$color-primary-dark: brand.$color-primary-dark;
+$color-primary-bg: brand.$color-primary-bg;
+
+// 功能色
+$color-success: brand.$color-success;
+$color-warning: brand.$color-warning;
+$color-danger: brand.$color-danger;
+$color-info: brand.$color-info;
+
+// 银灰（历史命名，用于滚动条等中性场景）
+$color-silver: brand.$color-silver;
+$color-silver-light: brand.$color-silver-light;
+$color-silver-dark: brand.$color-silver-dark;
+
+// 文字
+$text-primary: brand.$text-primary;
+$text-regular: brand.$text-regular;
+$text-secondary: brand.$text-secondary;
+$text-placeholder: brand.$text-placeholder;
+
+// 背景
+$bg-page: brand.$bg-page;
+$bg-card: brand.$bg-card;
+$bg-sidebar: brand.$bg-sidebar;
+$bg-sidebar-active: brand.$bg-sidebar-active;
+
+// 描边
+$border-color: brand.$border-color;
+
+// 质感
+$shadow-card: brand.$shadow-card;
+$shadow-hover: brand.$shadow-hover;
+$shadow-dropdown: brand.$shadow-dropdown;
+$shadow-float: brand.$shadow-float;
+$radius-sm: brand.$radius-sm;
+$radius-base: brand.$radius-base;
+$radius-lg: brand.$radius-lg;
+
+// 布局（紧凑档）
+$sidebar-width: brand.$sidebar-width;
+$sidebar-collapsed-width: brand.$sidebar-collapsed-width;
+$header-height: brand.$header-height;

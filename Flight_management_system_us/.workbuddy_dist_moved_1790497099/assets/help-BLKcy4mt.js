@@ -1,0 +1,1 @@
+import{d as e}from"./index-DgUo45fD.js";function t(t){return e.get(`/help/faq`,{params:t})}function n(t){return e.post(`/help/feedback`,t)}function r(){return e.get(`/help/feedback`)}export{r as n,n as r,t};

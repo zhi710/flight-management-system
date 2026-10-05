@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>航班动态地图 · 航线网络预览</title>
+<style>
+  :root {
+    --color-primary: #1873CC;
+    --color-primary-hover: #135CA3;
+    --color-primary-soft: #E8F1FA;
+    --color-success: #2E7D32;
+    --color-success-soft: #EAF2EB;
+    --color-warning: #96601A;
+    --color-warning-soft: #F5EFE8;
+    --color-info: #5F6B7A;
+    --color-info-soft: #EFF0F2;
+    --text-primary: #303133;
+    --text-secondary: #5F6B7A;
+    --bg-page: #F5F7FA;
+    --bg-card: #FFFFFF;
+    --bg-muted: #F7F9FC;
+    --bg-muted-strong: #EDF1F7;
+    --border-color-lighter: #EBEEF5;
+    --radius-base: 6px;
+    --radius-card: 12px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg-page); color: var(--text-primary);
+    font-family: "PingFang SC", "Microsoft YaHei", -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .page { padding: 20px; max-width: 1280px; margin: 0 auto; }
+  .card { background: var(--bg-card); border: 1px solid var(--border-color-lighter);
+    border-radius: var(--radius-card); box-shadow: 0 2px 8px rgba(0,0,0,.04); padding: 20px; margin-bottom: 18px; }
+  .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .title { font-size: 18px; font-weight: 700; }
+  .sub { font-size: 13px; color: var(--text-secondary); }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+  .stat { display: flex; align-items: center; gap: 14px; border: 1px solid var(--border-color-lighter);
+    border-radius: var(--radius-card); padding: 16px; background: var(--bg-card); }
+  .stat .ico { width: 46px; height: 46px; border-radius: var(--radius-base); display: flex;
+    align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .stat .val { font-size: 24px; font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums; }
+  .stat .lab { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+  .legend { display: flex; align-items: center; gap: 18px; font-size: 13px; color: var(--text-secondary); }
+  .legend i { display: inline-block; margin-right: 6px; vertical-align: middle; }
+  .legend .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--color-primary); }
+  .legend .line { width: 18px; height: 3px; border-radius: 3px; background: var(--color-primary); }
+  .map-wrap { position: relative; height: 520px; border: 1px solid var(--border-color-lighter);
+    border-radius: var(--radius-base); overflow: hidden; background: var(--bg-muted); }
+  #map { width: 100%; height: 100%; }
+  .overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 10px; background: var(--bg-muted); color: var(--text-secondary); font-size: 13px; }
+  .overlay.hidden { display: none; }
+  .spinner { width: 26px; height: 26px; border: 3px solid var(--color-primary-soft);
+    border-top-color: var(--color-primary); border-radius: 50%; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .hint { margin-top: 14px; font-size: 12px; color: var(--text-secondary); line-height: 1.7; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border-color-lighter); }
+  th { color: var(--text-secondary); font-weight: 600; background: var(--bg-muted); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .bar { position: relative; display: inline-block; width: 90px; height: 6px; border-radius: 999px;
+    background: var(--bg-muted-strong); overflow: hidden; vertical-align: middle; margin-right: 10px; }
+  .bar > span { position: absolute; inset: 0 auto 0 0; background: var(--color-primary); border-radius: 999px; }
+  .code { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .arrow { color: var(--text-secondary); margin: 0 6px; }
+</style>
+<!-- 合规：默认场景使用腾讯地图 key 代理模式（前端零 key）。配置必须先于 SDK 加载。 -->
+<script type="text/javascript">
+  window._TMapSecurityConfig = {
+    serviceHost: 'http://127.0.0.1:__WB_HTTP_PORT__/_TMapService/_wbt/__WB_TMAP_SECRET__',
+  };
+</script>
+<script src="https://map.qq.com/api/gljs?v=1.exp"></script>
+</head>
+<body>
+<div class="page">
+  <div class="card">
+    <div class="head">
+      <div class="title">航班动态地图</div>
+      <div class="sub">数据快照：全量航班（含历史）</div>
+    </div>
+    <div class="stats">
+      <div class="stat">
+        <div class="ico" style="background: var(--color-primary-soft); color: var(--color-primary)">✈</div>
+        <div><div class="val" id="s-airport">–</div><div class="lab">覆盖机场</div></div>
+      </div>
+      <div class="stat">
+        <div class="ico" style="background: var(--color-success-soft); color: var(--color-success)">⇄</div>
+        <div><div class="val" id="s-route">–</div><div class="lab">航线数</div></div>
+      </div>
+      <div class="stat">
+        <div class="ico" style="background: var(--color-warning-soft); color: var(--color-warning)">◱</div>
+        <div><div class="val" id="s-flight">–</div><div class="lab">航班班次</div></div>
+      </div>
+      <div class="stat">
+        <div class="ico" style="background: var(--color-info-soft); color: var(--color-info)">◎</div>
+        <div><div class="val" id="s-city">–</div><div class="lab">覆盖城市</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head">
+      <div class="title" style="font-size:16px">航线网络</div>
+      <div class="legend">
+        <span><i class="dot"></i>机场</span>
+        <span><i class="line"></i>航线（线宽随航班量变化）</span>
+      </div>
+    </div>
+    <div class="map-wrap">
+      <div id="map"></div>
+      <div class="overlay" id="ov"><div class="spinner"></div><div id="ov-text">地图加载中…</div></div>
+    </div>
+    <div class="hint">
+      底图由腾讯地图提供（GCJ-02 火星坐标系，机场坐标已由 WGS-84 转换）；
+      平台暂无实时飞机位置数据，本图为航线网络示意。点击机场点位可查看航班量。
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head">
+      <div class="title" style="font-size:16px">航线清单</div>
+      <div class="sub" id="route-total"></div>
+    </div>
+    <table>
+      <thead>
+        <tr><th>航线</th><th>起点</th><th>终点</th><th class="num">航班量</th></tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+/* ===== 数据快照（来自后端 /admin/flights/route-map 的同口径聚合） ===== */
+const AIRPORTS = [
+  { code: 'PEK', name: '北京首都国际机场', city: '北京', longitude: 116.584444, latitude: 40.079444, flightCount: 31 },
+  { code: 'SHA', name: '上海虹桥国际机场', city: '上海', longitude: 121.336389, latitude: 31.197222, flightCount: 28 },
+  { code: 'XIY', name: '西安咸阳国际机场', city: '西安', longitude: 108.751389, latitude: 34.437222, flightCount: 8 },
+  { code: 'CAN', name: '广州白云国际机场', city: '广州', longitude: 113.298611, latitude: 23.392222, flightCount: 5 },
+  { code: 'SZX', name: '深圳宝安国际机场', city: '深圳', longitude: 113.810833, latitude: 22.639444, flightCount: 3 },
+  { code: 'CTU', name: '成都天府国际机场', city: '成都', longitude: 104.441111, latitude: 30.318889, flightCount: 2 },
+  { code: 'HGH', name: '杭州萧山国际机场', city: '杭州', longitude: 120.434444, latitude: 30.229444, flightCount: 1 },
+];
+const ROUTES = [
+  { route: 'PEK-SHA', from: 'PEK', to: 'SHA', flightCount: 16 },
+  { route: 'PEK-XIY', from: 'PEK', to: 'XIY', flightCount: 4 },
+  { route: 'SHA-PEK', from: 'SHA', to: 'PEK', flightCount: 4 },
+  { route: 'PEK-CAN', from: 'PEK', to: 'CAN', flightCount: 3 },
+  { route: 'SHA-SZX', from: 'SHA', to: 'SZX', flightCount: 3 },
+  { route: 'SHA-XIY', from: 'SHA', to: 'XIY', flightCount: 3 },
+  { route: 'CAN-PEK', from: 'CAN', to: 'PEK', flightCount: 2 },
+  { route: 'PEK-CTU', from: 'PEK', to: 'CTU', flightCount: 2 },
+  { route: 'SHA-HGH', from: 'SHA', to: 'HGH', flightCount: 1 },
+  { route: 'XIY-SHA', from: 'XIY', to: 'SHA', flightCount: 1 },
+];
+const FLIGHT_COUNT = 39;
+
+/* ===== WGS-84 → GCJ-02 ===== */
+const PI = Math.PI, A = 6378245.0, EE = 0.00669342162296594323;
+function outOfChina(lng, lat) { return lng < 72.004 || lng > 137.8347 || lat < 0.8293 || lat > 55.8271; }
+function transformLat(x, y) {
+  let ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+  ret += (20.0 * Math.sin(6.0 * x * PI) + 20.0 * Math.sin(2.0 * x * PI)) * 2.0 / 3.0;
+  ret += (20.0 * Math.sin(y * PI) + 40.0 * Math.sin(y / 3.0 * PI)) * 2.0 / 3.0;
+  ret += (160.0 * Math.sin(y / 12.0 * PI) + 320 * Math.sin(y * PI / 30.0)) * 2.0 / 3.0;
+  return ret;
+}
+function transformLng(x, y) {
+  let ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+  ret += (20.0 * Math.sin(6.0 * x * PI) + 20.0 * Math.sin(2.0 * x * PI)) * 2.0 / 3.0;
+  ret += (20.0 * Math.sin(x * PI) + 40.0 * Math.sin(x / 3.0 * PI)) * 2.0 / 3.0;
+  ret += (150.0 * Math.sin(x / 12.0 * PI) + 300.0 * Math.sin(x / 30.0 * PI)) * 2.0 / 3.0;
+  return ret;
+}
+function wgs84ToGcj02(lng, lat) {
+  if (!isFinite(lng) || !isFinite(lat) || outOfChina(lng, lat)) return [lng, lat];
+  let dLat = transformLat(lng - 105.0, lat - 35.0);
+  let dLng = transformLng(lng - 105.0, lat - 35.0);
+  const radLat = lat / 180.0 * PI;
+  let magic = Math.sin(radLat);
+  magic = 1 - EE * magic * magic;
+  const sqrtMagic = Math.sqrt(magic);
+  dLat = (dLat * 180.0) / ((A * (1 - EE)) / (magic * sqrtMagic) * PI);
+  dLng = (dLng * 180.0) / ((A / sqrtMagic) * Math.cos(radLat) * PI);
+  return [lng + dLng, lat + dLat];
+}
+
+/* ===== 侧栏统计与清单 ===== */
+const byCode = {};
+AIRPORTS.forEach(a => { byCode[a.code] = a; });
+document.getElementById('s-airport').textContent = AIRPORTS.length;
+document.getElementById('s-route').textContent = ROUTES.length;
+document.getElementById('s-flight').textContent = FLIGHT_COUNT;
+document.getElementById('s-city').textContent = new Set(AIRPORTS.map(a => a.city)).size;
+document.getElementById('route-total').textContent = '共 ' + ROUTES.length + ' 条';
+
+const maxCount = Math.max.apply(null, ROUTES.map(r => r.flightCount));
+const tbody = document.getElementById('tbody');
+ROUTES.slice().sort((a, b) => b.flightCount - a.flightCount).forEach(r => {
+  const pct = Math.max(6, Math.round(r.flightCount / maxCount * 100));
+  const tr = document.createElement('tr');
+  tr.innerHTML =
+    '<td><span class="code">' + r.from + '</span><span class="arrow">→</span><span class="code">' + r.to + '</span></td>' +
+    '<td>' + (byCode[r.from] ? byCode[r.from].name : r.from) + '</td>' +
+    '<td>' + (byCode[r.to] ? byCode[r.to].name : r.to) + '</td>' +
+    '<td class="num"><span class="bar"><span style="width:' + pct + '%"></span></span>' + r.flightCount + '</td>';
+  tbody.appendChild(tr);
+});
+
+/* ===== 地图渲染 ===== */
+const MARKER_SVG = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26">' +
+  '<circle cx="13" cy="13" r="8" fill="#1873CC" stroke="#ffffff" stroke-width="2.5"/>' +
+  '<circle cx="13" cy="13" r="2.4" fill="#ffffff"/></svg>');
+
+function fail(msg) {
+  const ov = document.getElementById('ov');
+  ov.classList.remove('hidden');
+  document.getElementById('ov-text').textContent = msg;
+}
+
+function boot() {
+  if (!window.TMap) { fail('地图 SDK 加载失败，请检查网络后重试'); return; }
+
+  // 合规：不传 mapStyleId，使用默认矢量底图
+  const map = new TMap.Map('map', { center: new TMap.LatLng(34.0, 108.9), zoom: 4.4, viewMode: '2D' });
+
+  const markerLayer = new TMap.MultiMarker({
+    map: map,
+    styles: { default: new TMap.MarkerStyle({ width: 26, height: 26, anchor: { x: 13, y: 13 }, src: MARKER_SVG }) },
+    geometries: AIRPORTS.map(a => {
+      const p = wgs84ToGcj02(Number(a.longitude), Number(a.latitude));
+      return { id: a.code, styleId: 'default', position: new TMap.LatLng(p[1], p[0]), properties: a };
+    }),
+  });
+
+  const lineLayer = new TMap.MultiPolyline({
+    map: map,
+    styles: {
+      // TMap 的 PolylineStyle.width 必须是整数，否则被判为无效并丢弃该样式
+      thin: new TMap.PolylineStyle({ color: '#5D9DDB', width: 2 }),
+      mid: new TMap.PolylineStyle({ color: '#1873CC', width: 3 }),
+      thick: new TMap.PolylineStyle({ color: '#135CA3', width: 5 }),
+    },
+    geometries: ROUTES.map(r => {
+      const f = wgs84ToGcj02(byCode[r.from].longitude, byCode[r.from].latitude);
+      const t = wgs84ToGcj02(byCode[r.to].longitude, byCode[r.to].latitude);
+      const ratio = r.flightCount / maxCount;
+      return {
+        id: r.route,
+        styleId: ratio > 0.66 ? 'thick' : ratio > 0.33 ? 'mid' : 'thin',
+        paths: [new TMap.LatLng(f[1], f[0]), new TMap.LatLng(t[1], t[0])],
+      };
+    }),
+  });
+
+  // InfoWindow 构造函数要求 position，缺省会抛错；先给占位坐标再立即关闭
+  const info = new TMap.InfoWindow({
+    map: map,
+    position: new TMap.LatLng(34.0, 108.9),
+    offset: { x: 0, y: -14 },
+    enableCustom: false,
+  });
+  info.close();
+  markerLayer.on('click', function (evt) {
+    const p = (evt && evt.geometry && evt.geometry.properties) || {};
+    const c = wgs84ToGcj02(Number(p.longitude), Number(p.latitude));
+    info.open();
+    info.setPosition(new TMap.LatLng(c[1], c[0]));
+    info.setContent(
+      '<div style="padding:4px 2px;font-size:13px;line-height:1.6;">' +
+      '<div style="font-weight:600;">' + p.code + ' ' + (p.name || '') + '</div>' +
+      '<div style="color:#5F6B7A">' + (p.city || '') + '</div>' +
+      '<div>航班量：<b>' + (p.flightCount || 0) + '</b></div></div>');
+  });
+
+  // 视野自适应
+  const pts = AIRPORTS.map(a => wgs84ToGcj02(Number(a.longitude), Number(a.latitude)));
+  let minLng = pts[0][0], maxLng = pts[0][0], minLat = pts[0][1], maxLat = pts[0][1];
+  pts.forEach(function (p) {
+    minLng = Math.min(minLng, p[0]); maxLng = Math.max(maxLng, p[0]);
+    minLat = Math.min(minLat, p[1]); maxLat = Math.max(maxLat, p[1]);
+  });
+  try {
+    map.fitBounds(
+      new TMap.LatLngBounds(new TMap.LatLng(minLat, minLng), new TMap.LatLng(maxLat, maxLng)),
+      { padding: 80 });
+  } catch (e) {
+    const span = Math.max(maxLng - minLng, (maxLat - minLat) * 1.4);
+    map.setCenter(new TMap.LatLng((minLat + maxLat) / 2, (minLng + maxLng) / 2));
+    map.setZoom(span > 40 ? 4 : span > 20 ? 5 : span > 10 ? 5.6 : 6.4);
+  }
+
+  document.getElementById('ov').classList.add('hidden');
+}
+
+if (window.TMap) {
+  boot();
+} else {
+  let waited = 0;
+  const timer = setInterval(function () {
+    waited += 200;
+    if (window.TMap) { clearInterval(timer); boot(); }
+    else if (waited >= 15000) { clearInterval(timer); fail('地图 SDK 加载超时，请检查网络后重试'); }
+  }, 200);
+}
+</script>
+</body>
+</html>

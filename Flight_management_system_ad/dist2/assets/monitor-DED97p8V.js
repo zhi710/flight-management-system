@@ -1,0 +1,1 @@
+import{n as e}from"./index-3-K_XWeq.js";function t(){return e.get(`/admin/monitor/dashboard`)}function n(t){return e.get(`/admin/alerts`,{params:t})}function r(){return e.get(`/admin/alerts/stats`)}function i(t,n){return e.post(`/admin/alerts/${t}/resolve`,n)}function a(t){return e.get(`/admin/statistics`,{params:t})}export{i as a,a as i,r as n,t as r,n as t};

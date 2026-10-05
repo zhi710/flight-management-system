@@ -1,0 +1,9 @@
+timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success,failureMessage,bytes,sentBytes,grpThreads,allThreads,URL,Latency,IdleTime,Connect,"bizCode"
+1788924673819,382,搜索航班_0,200,,smoke 1-1,text,true,,26215,273,1,1,http://127.0.0.1:8080/api/flights/search?tripType=ONEWAY&departure=PEK&arrival=SHA&departDate=2026-09-15&adults=1&children=0&infants=0&cabinClass=ECONOMY,378,0,70,200
+1788924674222,43,创建订单_0,200,,smoke 1-1,text,true,,900,687,1,1,http://127.0.0.1:8080/api/orders,43,0,0,200
+1788924674388,17,订单详情_0,200,,smoke 1-1,text,true,,1081,395,1,1,http://127.0.0.1:8080/api/orders/ORD2097528227370676224,17,0,0,200
+1788924674407,29,订单列表_0,200,,smoke 1-1,text,true,,1216,391,1,1,http://127.0.0.1:8080/api/orders?page=1&pageSize=10,29,0,0,200
+1788924674439,35,后台监控大屏_0,200,,smoke 1-1,text,true,,6794,386,1,1,http://127.0.0.1:8080/api/admin/monitor/dashboard,35,0,0,200
+1788924674477,113,后台航班列表_0,200,,smoke 1-1,text,true,,11771,395,1,1,http://127.0.0.1:8080/api/admin/flights?page=1&pageSize=20,112,0,0,200
+1788924674594,53,后台机组名单_0,200,,smoke 1-1,text,true,,1370,378,1,1,http://127.0.0.1:8080/api/admin/crew/list,53,0,0,200
+1788924674649,140,后台旅客查询_0,200,,smoke 1-1,text,true,,7074,398,1,1,http://127.0.0.1:8080/api/admin/passengers?page=1&pageSize=20,140,0,0,200

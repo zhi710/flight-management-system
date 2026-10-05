@@ -1,0 +1,218 @@
+# ============================================================
+# 航班管理系统 - 应用配置
+# ============================================================
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: flight-management-system
+
+  # ---------- 数据源 ----------
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/flight_management?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: 
+
+  # ---------- Redis ----------
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      database: 0
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
+          max-wait: 3000ms
+
+  # ---------- Jackson 序列化 ----------
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    default-property-inclusion: non_null
+
+  # ---------- 文件上传 ----------
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
+
+# ---------- MyBatis-Plus ----------
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl   # 开发环境打印 SQL，生产环境请关闭
+  global-config:
+    db-config:
+      id-type: assign_id          # 雪花算法生成 ID
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# ---------- JWT ----------
+jwt:
+  secret: Y2xhdWRlLWZtcy1zZWNyZXQta2V5LWZvci1qd3QtdG9rZW4tMjAyNg==
+  expiration: 7200000             # 旅客端 Token 有效期：2 小时（毫秒）
+  admin-expiration: 1800000       # 管理端 Token 有效期：30 分钟（毫秒）
+  refresh-expiration: 604800000   # Refresh Token 有效期：7 天（毫秒）
+
+# ---------- SpringDoc 接口文档 ----------
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  group-configs:
+    - group: passenger
+      display-name: 旅客端接口
+      paths-to-match: /**
+      packages-to-scan: com.itemll.flight_management_system_sp.controller
+    - group: admin
+      display-name: 管理端接口
+      paths-to-match: /admin/**
+      packages-to-scan: com.itemll.flight_management_system_sp.controller.admin
+
+# ---------- 文件上传配置 ----------
+upload:
+  base-dir: D:\uploads\images
+  url-prefix: /images
+  max-size: 52428800   # 50MB
+
+# ============================================================
+# 支付渠道配置
+# ============================================================
+payment:
+  # 运行模式：
+  #   mock — 演示模式。不调用任何真实支付平台，二维码为本地生成的模拟串，
+  #          通过 POST /payments/{paymentId}/simulate 完成支付。默认值，保持答辩演示可用。
+  #   live — 真实渠道模式。按下方 channels 开关路由到对应支付平台（当前已实现支付宝）。
+  mode: live
+
+  # 支付单有效期（分钟）。必须与订单支付时限保持一致，否则出现
+  # 「订单已过期但支付单还能付款」或反过来的不一致。
+  expire-minutes: 15
+
+  # ---------- 演示兜底开关 ----------
+  # 控制 POST /payments/{paymentId}/simulate（前端「模拟支付完成」按钮）。
+  #   不配置该项 = 跟随 mode：mock 模式放行、live 模式自动关闭（默认行为）。
+  #   true  = 强制放行。live 模式下也能用兜底按钮，用于答辩现场网络/沙箱异常时救场。
+  #   false = 强制关闭。
+  #
+  # ⚠️ 置为 true 等于「任何登录用户都能不付款把订单刷成已支付」，
+  #    仅可用于演示/验收环境。正式上线前务必改为 false 或直接删除本段。
+  #    启动时会打印一条 WARN 日志提示，避免忘记。
+  demo:
+    simulate-enabled: true
+
+  # 各支付方式开关。仅当 mode=live 时生效；某个渠道 enabled=false 时，
+  # 用户选择该支付方式会收到「暂未开通」的业务提示，而不是拿到一个假二维码。
+  channels:
+    alipay:
+      enabled: true         # 已接入支付宝沙箱
+    wechat:
+      enabled: false        # 未接入微信支付
+    bank-card:
+      enabled: false
+    credit:
+      enabled: false
+
+  # ---------- 支付宝（沙箱 / 生产）----------
+  # 密钥与证书只允许放在本文件或环境变量中，切勿提交到 Git、切勿写进代码。
+  # 沙箱凭证获取路径：open.alipay.com → 控制台 → 沙箱环境
+  alipay:
+    # 沙箱环境填沙箱应用的 APPID（形如 90210001xxxxxxxx）
+    app-id: "9021000168666531"
+    # 沙箱网关用 openapi-sandbox.dl.alipaydev.com，生产改为 https://openapi.alipay.com/gateway.do
+    gateway-url: https://openapi-sandbox.dl.alipaydev.com/gateway.do
+    # 应用私钥（PKCS8，本地生成后只保存在服务端，用于给请求加签）
+    app-private-key: "MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQCe8n+ZJavVAk/ieg1xTewYJL2PWXnu8jxSR8QYKCnmWBu/R2AUsMJAPt/w1x6Fxa+T898Yk6mHdUUvd+q4dN+UrQbknzlFlAMHN5xcWMFJ0Y4cPIJ3BuJ6jFDiXmJvEIEF1byliPwuo8EoJrAqiqZ3epRawpWBDZk+KnM2VAGX3ijvvfM9NVccSFlU8xIMFn2tT5I0WzHGqpkKGpiDb3KjInlYmhmEnjiOmGrvL1bZQWrY0aUzgJRRnSEqwtCHpDS7dIsX3JXoHCT+aCZJjTONhgCSZ0H4UbKRVamJYtGYcJxGdN/wNsu0Scl25DfQsrMR9dk5ezXhh+3nVgH1pKPlAgMBAAECggEAERYWW1suVo6SEdF3AngS6iGA8xj2P5Zwn5OxY7tljappCS3eCTtbFlbr8dLeKBkxH6F2mQi+j54umsS0SbHemvfips7q9CzOCoeS2mZ8GLhbI3PpvmvSCsRsqXjl8fR/OiZYyh6opUbbK7rE8z3GWU+nBP6n3aCdmY4spmlvZmjCe46k4oC8UiMVZlJWVm1NW3K1PuLLLUWSH2aCEVk0lcEMXpmxXfTqgYeux8x9fqQL+dezS1ygDbxDUWWmrPMmMI9TwS4AqW7ivzU8daC7XnRjZ+oqaCvavyYC2DbCFbdRJ7pChC133kgpzTCkDiyPiF/nzOFD9KueMQiXz+Ve4QKBgQDp5WdxZcGFVF0CCQPQdKSEKvy/sUZUfeDZY6bHId2Cxa0VwPICLiq97IljeFdcIVAqgtBazr7+ovuAavFx5SpiZ5VVm6WGZ0yPgEoB4KUbTHxtLU9+7Oc5dqgZ8s93nhkCdnZIFQ/TDHggZEA9+179/HFHSSA7ida+pwCUK3dB6QKBgQCt99+qm3jzEi3bJuErZdIh47TfdoskSTu536APc4wgFjtHxTjTb15ZlfOL5esnszLkL+9MY9B31e/4aJJkwQGJztIBwhCxjdYU9lw4JWuZ+SuFNk4l3wm1WitA8egwf8vi9XrlYpV5FR89GayK794Xq8JD7esZhdIArcqD1Dx4nQKBgQC4jWEssaybxnBIzdIrpg21l7Gsk3U578T94spSr573s4AZ/Q83tzPUfhH94ZOUx1hY4rUCIcXEZ9dogXmXc8oYsUC8tr5JqbJYPFKo3peITbaT8r+aF9VumviS2OroqF91eQFlaPD+hwU2EcQ64+AVKh47sDB1qhI+hslHIHDOGQKBgQCtBqHgr61GJMiS9UJyxVyP9EgLEX4mYugSYIZzl7rAlxvysAdq05OFioymkdCmtaZiKgLZeVT4O0HnUSp5JzV+eMOKmBe+YJGSW80w0pcIlzhfz7k+FW00gDAQ8gi7Y//HBdxrlPeRbB6byJNBxHyiEmSu500zH1PU9QU8xLQ4SQKBgQDS5kqPhEFqfsME6Q5jCeju2tGt/OLOSCVDd08pEOollmG47UFa1s+hcwSDwam8VktQS3xGEo2KsfoO+eWavtYmqahDsSCrWoJ7izXqz0CMKtI1dBZX5AWnTjOVraEEePSgQl0z1gbI+uBXFuXC6bx3aOD4SzStEQ2U3fPC0dNXdQ=="
+    # 支付宝公钥（上传应用公钥后由平台返回，用于验证回调签名）
+    alipay-public-key: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiihT24MxONXC/DvI7/2BcFfiv4LYqfBFxK0RcuBMh/ALxKx0D42YPjWktvRONhmS0HRUvxB8XefoVJsM/OykRy+bcU9egGVaoaVxamLFGxS99q5yaZKtOdFDSlnNiYSJDA/U2869+x91DO8oUk/GDIFjWS7DPI6h/uDoKT/03Sj3CYvpkwP93ixkhStXboRewIIWzSUhwRi39eGHECLYmxBrX1m0Wr9a6QNiK/unR2k9c4zrbts46Tz5Iun+3TS35zORiVkhc87ySQyWUPdz/gov+WeDHj1d323NU2myJFfHPd5Fb4xaCKEyqsbM8fafmxicHeXBOTmLPgPw1jYenwIDAQAB"
+    # 异步通知地址，必须是公网可达的 URL；本地开发用内网穿透映射到
+    # http://localhost:8080/api/payments/callback/alipay
+    notify-url: ""
+    # 同步跳转地址（用户付款后浏览器回跳的页面），可选
+    return-url: ""
+    # 签名算法，固定 RSA2
+    sign-type: RSA2
+    # 订单标题前缀，最终 subject = 前缀 + 航班号 + 出发地-目的地
+    subject-prefix: 航班订单
+
+# ============================================================
+# 短信验证码配置
+# ============================================================
+sms:
+  # 短信服务商：
+  #   mock   — 演示模式（默认）。不调用任何短信网关，验证码只打印在后端日志里，
+  #            并在日志中标注 [演示短信]。本地/离线演示、跑单测都用它。
+  #   aliyun — 真实发送，走阿里云「短信认证服务」（号码认证服务 PNVS）。
+  #
+  # 为什么是「短信认证服务」而不是普通短信服务：
+  #   普通短信要求企业资质 + 自建签名 + 模板 + 运营商实名报备（2025 年起需 5~10 个工作日），
+  #   个人开发者无法开通；短信认证服务支持个人实名认证直接调用，平台赠送签名与验证码模板，
+  #   免资质、免备案，开通即可用。
+  #
+  # ⚠️ 除 aliyun 之外的任何取值都会被当作 mock 处理（配置写错时宁可演示，也不误发真实短信）。
+  provider: aliyun
+
+  # 验证码有效期（分钟），同时是 Redis 的 TTL
+  code-expire-minutes: 5
+  # 验证码位数
+  code-length: 6
+
+  # ---------- 发送与校验限流 ----------
+  # 真实短信按条计费，这四道闸门必须有，否则一个脚本就能把余额刷空。
+  # 注意：日限与 IP 限统计的是「发送尝试」（含被冷却挡下的重复点击），这是刻意的防刷口径。
+  throttle:
+    cooldown-seconds: 60          # 同一手机号发送冷却（前端 60 秒倒计时的服务端强校验）
+    daily-limit-per-phone: 10     # 同一手机号每日发送上限
+    hourly-limit-per-ip: 20       # 同一 IP 每小时发送上限（防换号批量刷）
+    max-verify-attempts: 5        # 同一手机号校验失败次数上限
+    verify-lock-minutes: 15       # 超限后的锁定时长（防 6 位验证码被暴力枚举）
+
+  # ---------- 演示兜底开关 ----------
+  # 万能验证码：任何手机号用该码都能通过校验，用于答辩现场收不到短信时救场。
+  #   不配置 universal-code-enabled = 跟随 provider：mock 放行、aliyun 自动关闭。
+  #   true = 强制放行（真实短信模式下也能兜底）；false = 强制关闭。
+  #
+  # ⚠️ 置为 true 等于「无需短信即可注册/登录」，仅可用于演示/验收环境。
+  #    正式上线前务必改为 false；启动时会打印 WARN 日志提醒。
+  demo:
+    universal-code: "123456"
+    universal-code-enabled: true
+
+  # ---------- 阿里云短信认证服务（PNVS）----------
+  # 开通路径：阿里云控制台 → 号码认证服务 → 开通「短信认证」+「融合认证」
+  #   → 创建 RAM 用户拿 AccessKey → 在「赠送签名 / 赠送模板」中复制签名与模板 Code。
+  # 密钥只允许放在本文件或环境变量中，切勿提交到 Git、切勿写进代码。
+  #
+  # ⚠️ 赠送测试套餐的限制（2026-09 实测口径）：
+  #   1. 只有控制台「快速测试 → 绑定测试手机号码」里绑定的号码能收到短信，每个账号最多 5 个；
+  #      未绑定的号码调用会直接失败。答辩前务必把要演示的手机号先绑上。
+  #   2. 测试短信同样计费，发送失败不计费；请保持账户余额充足。
+  aliyun:
+    access-key-id: ""      # RAM 用户 flight-sms 的 AccessKeyId
+    access-key-secret: ""
+    endpoint: dypnsapi.aliyuncs.com
+    sign-name: "恒创联众"          # 控制台「赠送签名」原文，不要带【】
+    template-code: "100001"       # 控制台「赠送模板」的编号
+    # 模板变量 JSON，{code} 会被替换成真实验证码（必须保留占位符，
+    # 否则渠道会自行随机生成验证码，用户收到的码与本系统保存的不一致）。
+    # 该赠送模板原文：您的验证码为${code}，…以上验证码${min}分钟内有效…
+    # 变量名已与控制台模板详情核对一致（code / min），无需再改。
+    template-param: '{"code":"{code}","min":"5"}'
+    connect-timeout-ms: 5000
+    read-timeout-ms: 10000
+
+# ---------- 日志 ----------
+logging:
+  level:
+    com.itemll.flight_management_system_sp: debug

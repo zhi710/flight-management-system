@@ -1,0 +1,1 @@
+import{d as e}from"./index-DgUo45fD.js";function t(){return e.get(`/checkin/available`)}function n(t){return e.get(`/checkin/seats/${t}`)}function r(t){return e.post(`/checkin`,t)}function i(t){return e.get(`/checkin/boarding-pass/${t}`)}function a(t){return e.post(`/checkin/${t}/cancel`)}export{n as a,i,r as n,t as r,a as t};

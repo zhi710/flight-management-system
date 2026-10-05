@@ -1,0 +1,42 @@
+{
+  "name": "flight-management-system-ad",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "run-p type-check \"build-only {@}\" --",
+    "preview": "vite preview",
+    "build-only": "vite build",
+    "type-check": "vue-tsc --build",
+    "theme:sync": "node ../design-system/gen-ramp.mjs --write && node ../design-system/sync.mjs",
+    "theme:check": "node ../design-system/gen-ramp.mjs --check && node ../design-system/sync.mjs --check",
+    "theme:lint": "node ../design-system/lint-tokens.mjs --strict"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.2",
+    "axios": "^1.17.0",
+    "echarts": "^6.1.0",
+    "element-plus": "^2.14.1",
+    "pinia": "^3.0.4",
+    "vue": "^3.5.32",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@tsconfig/node24": "^24.0.4",
+    "@types/node": "^24.12.2",
+    "@vitejs/plugin-vue": "^6.0.6",
+    "@vue/tsconfig": "^0.9.1",
+    "npm-run-all2": "^8.0.4",
+    "sass": "^1.100.0",
+    "typescript": "~6.0.0",
+    "unplugin-auto-import": "^21.0.0",
+    "unplugin-vue-components": "^32.1.0",
+    "vite": "^8.0.8",
+    "vite-plugin-vue-devtools": "^8.1.1",
+    "vue-tsc": "^3.2.6"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  }
+}

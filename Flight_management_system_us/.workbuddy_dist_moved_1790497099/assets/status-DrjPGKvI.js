@@ -1,0 +1,1 @@
+import{d as e}from"./index-DgUo45fD.js";function t(t){return e.get(`/flight-status`,{params:t})}function n(t){return e.post(`/flight-status/subscribe`,t)}function r(t){return e.delete(`/flight-status/subscribe/${t}`)}function i(){return e.get(`/flight-status/subscriptions`)}export{r as i,i as n,n as r,t};
